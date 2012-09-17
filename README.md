@@ -1,0 +1,2 @@
+* see also:[モナドが合成できるとき](http://d.hatena.ne.jp/everpeace/20120917/1347868517)
+	*  [sample codes](https://github.com/everpeace/composing-monads/blob/master/src/main/scala/org/everpeace/composing_modads/ComposingMonads.scala)
