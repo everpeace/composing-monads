@@ -10,9 +10,9 @@ object ComposingMonads extends App{
   }
   trait Monad[M[_]] extends Functor[M]{
     def unit[A](a:A):M[A]
-    def join[A](mm:M[M[A]]):M[A]
+    def flatten[A](mm:M[M[A]]):M[A]
 
-    def flatMap[A,B](ma:M[A])(f:(A)=>M[B]) = join(map(ma)(f))
+    def flatMap[A,B](ma:M[A])(f:(A)=>M[B]) = flatten(map(ma)(f))
   }
   // two monads have to be provided because trait's type parameters can't have context bound.
   trait Distributives[M[_],N[_]]{
@@ -25,12 +25,12 @@ object ComposingMonads extends App{
   implicit val OptionMonad = new Monad[Option]{
     def map[A, B](ma: Option[A])(f: (A) => B) = ma.map(f)
     def unit[A](a: A) = Option(a)
-    def join[A](mm: Option[Option[A]]) = mm.flatMap(identity)
+    def flatten[A](mm: Option[Option[A]]) = mm.flatMap(identity)
   }
   implicit val ListMonad = new Monad[List]{
     def map[A, B](ma: List[A])(f: (A) => B) = ma.map(f)
     def unit[A](a: A) = List(a)
-    def join[A](mm: List[List[A]]) = mm.flatten
+    def flatten[A](mm: List[List[A]]) = mm.flatten
   }
   implicit val ListOptionDistributives = new Distributives[List,Option]{
     def M = implicitly[Monad[List]]
@@ -43,7 +43,7 @@ object ComposingMonads extends App{
     new Monad[({type MN[α] = M[N[α]]})#MN]{
       def map[A,B](ma:M[N[A]])(f: (A) => B) = m.map(ma)(n.map(_)(f))
       def unit[A](a: A) =  m.unit(n.unit(a))
-      def join[A](mnmn:M[N[M[N[A]]]])= m.map(m.join(m.map(mnmn)(s.swap(_))))(n.join(_))
+      def flatten[A](mnmn:M[N[M[N[A]]]])= m.map(m.flatten(m.map(mnmn)(s.swap(_))))(n.flatten(_))
     }
 
   // provides map/flatmap syntax for monads.
