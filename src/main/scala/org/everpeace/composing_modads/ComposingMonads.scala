@@ -32,10 +32,13 @@ object ComposingMonads extends App{
     def unit[A](a: A) = List(a)
     def flatten[A](mm: List[List[A]]) = mm.flatten
   }
-  implicit val ListOptionDistributives = new Distributives[List,Option]{
-    def M = implicitly[Monad[List]]
+  implicit def MonadOptionDistributives[M[_]](implicit monadM: Monad[M]) = new Distributives[M,Option]{
+    def M = monadM
     def N = implicitly[Monad[Option]]
-    def swap[A](nm: Option[List[A]]) = nm.getOrElse(List()).map(Option(_))
+    def swap[A](nm: Option[M[A]]) = nm match{
+      case Some(ma) => monadM.map(ma)(Option(_))
+      case None => monadM.unit(None)
+    }
   }
 
   // monad composition by distributives.
